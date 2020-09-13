@@ -31,25 +31,18 @@ class jpvi_Jdict {
         });
     }
 
-    getKanji(jsonData) {
-        let html = '<div id="kanji" class="ui segment active tab panel-content"><div class="word_kanji_list">';
-        for (const iterator of jsonData) {
-            html += `
-                <div class="kanji_item">
-                    <div class="kanji_item__letter japanese-font">${iterator.kanji}</div>
-                    <div class="kanji_item__description">
-                        <div class="kanji_item__hanviet">${iterator.hanviet}</div>
-                        <div class="kanji_item__pronunciation japanese-font">
-                            <div class="kanji_item__pronunciation__onyomi"><span>On:</span>${iterator.onyomi}</div>
-                            <div class="kanji_item__pronunciation__kunyomi"><span>Kun:</span>${iterator.kunyomi}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+    getHanviet(jsonData, word) {
+        let hanviet = "";
+        for (const letter of word) {
+            for (const iterator of jsonData) {
+                if (iterator.kanji == letter) {
+                    hanviet += " " + iterator.hanviet;
+                    
+                }
+            }
         }
 
-        html += "</div></div>";
-        return html;
+        return hanviet;
     }
 
     getExample(examples) {
@@ -85,18 +78,18 @@ class jpvi_Jdict {
             let response = await fetch(url);
             let jsonData = await response.json();
 
-            let kanjiHtml = this.getKanji(jsonData.kanjis);
+            let hanviet = this.getHanviet(jsonData.kanjis, word);
             let exampleHtml = this.getExample(jsonData.examples);
 
             let htmlData = `
             <div class="box-main-word">
                 <p>
                     <span class="main-word cl-red-main">${jsonData.word}</span>
-                    <span class="mean-fr-word romaji">${jsonData.kana}</span>
+                    <span class="mean-fr-word romaji">${jsonData.kana} (${hanviet})</span>
                     <span class="mean-fr-word cl-blue">◆ ${jsonData.suggest_mean}</span>
                 </p>
         `;
-            htmlData += kanjiHtml + exampleHtml + '</div>';
+            htmlData += exampleHtml + '</div>';
 
             let parser = new DOMParser();
             doc = parser.parseFromString(htmlData, 'text/html');
@@ -122,7 +115,6 @@ class jpvi_Jdict {
             <style>
                 .main-word {font-weight: 700;font-size: 24px;margin-right: 80px;line-height: 32px;min-height: 32px;margin-bottom: 4px;}
                 .mean-fr-word {font-size: 18px;clear: both;}
-                .example-container .sentence-exam {display: block;}
                 .example-mean-word {margin-top: 4px;}
                 .japanese-char {font-size: 15px;word-break: break-all;}
                 .inline {display: inline-block;}
@@ -136,10 +128,6 @@ class jpvi_Jdict {
                 .kanji_item {margin-right: 20px;display: flex;align-items: center;background: #f1f3f4;border-radius: 7px;}
                 .kanji_item__letter {font-size: 30px;color: #3b3b3b;line-height: 40px;}
                 .japanese-font {font-family: Noto Sans JP, sans-serif !important;}
-                .kanji_item__hanviet {font-size: 15px;line-height: 15px;}
-                .kanji_item__pronunciation {display: flex;}
-                .kanji_item__pronunciation__onyomi {font-size: 14px;}
-                .kanji_item__pronunciation__kunyomi {font-size: 14px;margin-left: 10px;}
                 .ui.tab.active, .ui.tab.open {display: block;}
             </style>`;
 
